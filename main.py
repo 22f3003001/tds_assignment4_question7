@@ -47,7 +47,7 @@ Question: {q}
 Answer the question directly using information from the documentation above."""
 
     response = client.chat.completions.create(
-        model="openai/gpt-4o-mini",
+        model="openai/gpt-4.1-nano",
         messages=[
             {"role": "system", "content": "You are a helpful assistant that answers questions about TypeScript based on documentation. Be precise and include exact terms from the documentation."},
             {"role": "user", "content": prompt}
