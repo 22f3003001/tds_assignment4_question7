@@ -30,6 +30,16 @@ docs = [
     "Type assertions tell the compiler to trust you about the type of a value.",
     "Union types allow a value to be one of several types using the | operator.",
     "Tuples allow you to express an array with a fixed number of elements whose types are known.",
+    "Class member properties can be initialized directly in the class body. TypeScript supports property initializers syntax that allows you to initialize class fields outside the constructor.",
+    "Readonly modifier: You can mark properties as readonly to prevent them from being changed after initialization.",
+    "Access modifiers: TypeScript supports public, private, and protected modifiers for class members.",
+    "Parameter properties: Constructor parameters can be prefixed with an access modifier to automatically create and initialize a member property.",
+    "Abstract classes: Classes can be marked as abstract and cannot be instantiated directly.",
+    "Decorators: A special kind of declaration that can be attached to a class, method, accessor, property, or parameter.",
+    "Namespaces: A way to organize code and prevent naming collisions in the global namespace.",
+    "Modules: TypeScript uses ES6 module syntax with import and export statements.",
+    "Type guards: Techniques to narrow down the type of a variable within a conditional block.",
+    "Intersection types: Combine multiple types into one using the & operator.",
 ]
 
 @app.get("/search")
