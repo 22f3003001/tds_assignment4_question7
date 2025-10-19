@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from openai import OpenAI
+import os
 
 app = FastAPI()
 
@@ -11,48 +13,52 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Knowledge base from TypeScript Book
-knowledge_base = {
-    "fat arrow": "Lovingly called the fat arrow (because -> is a thin arrow and => is a fat arrow) and also called a lambda function (because of other languages).",
-    "!!": "The !! operator converts any value into an explicit boolean. The unary ! operator converts its operand to a Boolean and negates it. Using !! twice gives you the Boolean equivalent - !!x is the same as Boolean(x).",
-    "arrow function": "Another commonly used feature is the fat arrow function ()=>something. The motivation for a fat arrow is: you don't need to keep typing function. The fat arrow makes it simple for you to create a function.",
-    "this": "Fat arrows fix the 'this' problem by capturing the meaning of this from the surrounding context. As a wise man once said 'I hate JavaScript as it tends to lose the meaning of this all too easily'.",
-    "lambda": "The fat arrow is also called a lambda function (because of other languages).",
-    "boolean conversion": "You can cast a variable to boolean using the double exclamation mark !!. It converts truthy values to true and falsy values to false.",
-}
+client = OpenAI(
+    api_key=os.getenv("AIPIPE_TOKEN"),
+    base_url="https://aipipe.org/openai/v1"
+)
+
+# Expanded knowledge base with exact TypeScript book content
+docs = [
+    "The fat arrow function syntax: Lovingly called the fat arrow (because -> is a thin arrow and => is a fat arrow) and also called a lambda function.",
+    "The !! operator: Using !! converts any value into an explicit boolean. The first ! converts to boolean and negates, the second ! negates again to give the actual boolean value.",
+    "Arrow functions capture this: Fat arrows fix the meaning of this by capturing it from the surrounding context.",
+    "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript.",
+    "Interfaces define contracts in TypeScript code and provide explicit names for type checking.",
+    "Generics provide a way to make components work with any data type while maintaining type safety.",
+    "The any type is a powerful way to work with existing JavaScript, allowing you to opt-in and opt-out of type checking.",
+    "Type assertions tell the compiler to trust you about the type of a value.",
+    "Union types allow a value to be one of several types using the | operator.",
+    "Tuples allow you to express an array with a fixed number of elements whose types are known.",
+]
 
 @app.get("/search")
 async def search(q: str):
-    query_lower = q.lower()
+    # Use LLM to answer based on docs
+    context = "\n\n".join([f"Document {i+1}: {doc}" for i, doc in enumerate(docs)])
     
-    # Simple keyword matching
-    best_match = None
-    best_score = 0
+    prompt = f"""Based on the following documentation excerpts from the TypeScript book, answer the question concisely and accurately. Include the exact answer from the documentation.
+
+Documentation:
+{context}
+
+Question: {q}
+
+Answer the question directly using information from the documentation above."""
+
+    response = client.chat.completions.create(
+        model="openai/gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that answers questions about TypeScript based on documentation. Be precise and include exact terms from the documentation."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0
+    )
     
-    for key, value in knowledge_base.items():
-        # Check if key is in query
-        if key in query_lower:
-            score = len(key)
-            if score > best_score:
-                best_score = score
-                best_match = value
-    
-    # Additional pattern matching for specific questions
-    if "fat arrow" in query_lower or "=> syntax" in query_lower or "affectionately call" in query_lower:
-        best_match = knowledge_base["fat arrow"]
-    elif "!!" in q or "double exclamation" in query_lower or "explicit boolean" in query_lower:
-        best_match = knowledge_base["!!"]
-    elif "lambda" in query_lower:
-        best_match = knowledge_base["lambda"]
-    
-    if best_match:
-        return {
-            "answer": best_match,
-            "sources": "TypeScript Deep Dive by Basarat Ali Syed"
-        }
+    answer = response.choices[0].message.content
     
     return {
-        "answer": "I couldn't find a relevant answer in the TypeScript book.",
+        "answer": answer,
         "sources": "TypeScript Deep Dive by Basarat Ali Syed"
     }
 
