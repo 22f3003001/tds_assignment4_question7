@@ -15,7 +15,7 @@ app.add_middleware(
 
 client = OpenAI(
     api_key=os.getenv("AIPIPE_TOKEN"),
-    base_url="https://aipipe.org/openai/v1"
+    base_url="https://aipipe.org/openrouter/v1"
 )
 
 # Expanded knowledge base with exact TypeScript book content
@@ -65,4 +65,8 @@ Answer the question directly using information from the documentation above."""
 @app.get("/")
 async def root():
     return {"status": "running"}
+
+@app.get("//search")
+async def search_double_slash(q: str):
+    return await search(q)
 
